@@ -132,12 +132,6 @@ sub getZoneByCode {
     my $h_dec9  = (index($h_key, substr($code, 0, 1)) * 30.0 + index($h_key, substr($code, 1, 1))) . substr($code, 2);
 
     if ($h_dec9 =~ /^[15][^125][^125]/) {
-        #my ($_h_dec9_0, $_h_dec9_1) = split /^./, $h_dec9;
-        #if ($_h_dec9_0 eq 5) {
-        #    $h_dec9 = 7 . $_h_dec9_1;
-        #} elsif ($_h_dec9_0 eq 1) {
-        #    $h_dec9 = 3 . $_h_dec9_1;
-        #}
         if (substr($h_dec9, 0, 1) eq 5) {
             $h_dec9 = 7 . substr($h_dec9, 1);
         } elsif (substr($h_dec9, 0, 1) eq 1) {
