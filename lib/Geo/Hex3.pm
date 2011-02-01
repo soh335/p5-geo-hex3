@@ -1,5 +1,6 @@
 package Geo::Hex3;
 
+use 5.008;
 use warnings;
 use strict;
 use Carp;
@@ -9,7 +10,7 @@ use Math::Round qw/round/;
 use Math::Trig qw/pi tan atan/;
 use Math::BaseCalc;
 
-our $VERSION = "0.0.1";
+our $VERSION = '0.01';
 use vars qw/@ISA @EXPORT/;
 use Exporter;
 @ISA = qw/Exporter/;
@@ -219,3 +220,37 @@ sub __xy2loc {
 }
 
 1;
+__END__
+
+=pod
+
+=head1 NAME
+
+Geo::Hex3 - GeoHex v3 encoder/decoder
+
+=head1 DESCRIPTION
+
+GeoHex v3 encoder/decoder
+
+=head1 SEE ALSO
+
+L<http://geogames.net/geohex/v3>
+
+=head1 AUTHOR
+
+soh335
+
+=head1 COPYRIGHT AND LICENSE
+
+GeoHex by @sa2da (http://geogames.net) is licensed under
+Creative Commons BY-SA 2.1 Japan License.
+
+Copyright 2011
+Geo::Hex3 - GeoHex perl implementation by soh335
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+
+=cut
+
