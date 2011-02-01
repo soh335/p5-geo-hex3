@@ -6,9 +6,8 @@ use strict;
 use Carp;
 
 use POSIX qw/floor ceil/;
-use Math::Round qw/round/;
-use Math::Trig qw/pi tan atan/;
-use Math::BaseCalc;
+use Math::Round  ();
+use Math::Trig   ();
 
 our $VERSION = '0.01';
 use vars qw/@ISA @EXPORT/;
@@ -16,11 +15,16 @@ use Exporter;
 @ISA = qw/Exporter/;
 @EXPORT = qw/getZoneByLocation getZoneByCode/;
 
+use constant PI     => Math::Trig::pi();
+use constant H_DEG  => PI * ( 30.0 / 180.0 );
+use constant H_BASE => 20037508.34;
+use constant H_K    => Math::Trig::tan( H_DEG );
+
+my $i = 0;
+my @h_key   = split//,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+my %h_key   = map { $_ => $i++ } @h_key;
 my $h_key   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-my $h_base  = 20037508.34;
-my $h_deg   = pi() * ( 30.0 / 180.0 );
-my $h_k     = tan( $h_deg );
-my $calc    = new Math::BaseCalc( digits => [0..2] );
+
 
 sub getZoneByLocation {
     my ( $lat, $lon, $level ) = @_;
@@ -32,15 +36,15 @@ sub getZoneByLocation {
     my $lon_grid  = $z_xy->{x};
     my $lat_grid  = $z_xy->{y};
     my $unit_x    = 6.0 * $h_size;
-    my $unit_y    = 6.0 * $h_size * $h_k;
-    my $h_pos_x   = ( $lon_grid + $lat_grid /$h_k ) / $unit_x;
-    my $h_pos_y   = ( $lat_grid - $h_k * $lon_grid ) / $unit_y;
+    my $unit_y    = 6.0 * $h_size * H_K;
+    my $h_pos_x   = ( $lon_grid + $lat_grid / H_K ) / $unit_x;
+    my $h_pos_y   = ( $lat_grid - H_K * $lon_grid ) / $unit_y;
     my $h_x_0     = floor( $h_pos_x );
     my $h_y_0     = floor( $h_pos_y );
     my $h_x_q     = $h_pos_x - $h_x_0;
     my $h_y_q     = $h_pos_y - $h_y_0;
-    my $h_x       = round( $h_pos_x );
-    my $h_y       = round( $h_pos_y );
+    my $h_x       = Math::Round::round( $h_pos_x );
+    my $h_y       = Math::Round::round( $h_pos_y );
 
     if ($h_y_q > - $h_x_q + 1.0) {
         if ( ( $h_y_q < 2.0 * $h_x_q ) && ( $h_y_q > 0.5 * $h_x_q ) ) {
@@ -55,14 +59,14 @@ sub getZoneByLocation {
         }
     }
 
-    my $h_lat = ( $h_k * $h_x * $unit_x + $h_y * $unit_y ) / 2;
-    my $h_lon = ( $h_lat - $h_y * $unit_y ) / $h_k;
+    my $h_lat = ( H_K * $h_x * $unit_x + $h_y * $unit_y ) / 2;
+    my $h_lon = ( $h_lat - $h_y * $unit_y ) / H_K;
 
     my $z_loc   = __xy2loc( $h_lon, $h_lat );
     my $z_loc_x = $z_loc->{lon};
     my $z_loc_y = $z_loc->{lat};
 
-    if ( $h_base - $h_lon < $h_size ) {
+    if ( H_BASE - $h_lon < $h_size ) {
         $z_loc_x  = 180;
         ( $h_x, $h_y ) = ( $h_y, $h_x );
     }
@@ -70,12 +74,10 @@ sub getZoneByLocation {
     my $h_code  = "";
     my @code3_x = ();
     my @code3_y = ();
-    my $code3   = "";
-    my $code9   = "";
     my $mod_x   = $h_x;
     my $mod_y   = $h_y;
 
-    for ( my $i = 0; $i <= $level; $i++ ) {
+    for my $i ( 0 .. $level ) {
         my $h_pow = 3.0 ** ( $level - $i );
 
         if ( $mod_x >= ceil( $h_pow/2.0 ) ) {
@@ -107,10 +109,9 @@ sub getZoneByLocation {
     my $h_1   = substr( $h_code, 0, 3 );
     my $h_a1  = floor( $h_1 / 30.0 );
     my $h_a2  = $h_1 % 30.0;
-    $h_code   = ( substr( $h_key, $h_a1, 1 ) . substr( $h_key, $h_a2, 1 ) ) . $h_2;
 
     {
-        code  => $h_code,
+        code  => $h_key[ $h_a1 ] . $h_key[ $h_a2 ] . $h_2,
         x     => $h_x,
         y     => $h_y,
         lat   => $z_loc_y,
@@ -118,22 +119,20 @@ sub getZoneByLocation {
     };
 }
 
+
 sub getZoneByCode {
     my $code    = shift;
     my $level   = length($code);
     my $h_size  = __setHexSize($level);
     my $unit_x  = 6.0 * $h_size;
-    my $unit_y  = 6.0 * $h_size * $h_k;
+    my $unit_y  = 6.0 * $h_size * H_K;
     my $h_x     = 0.0;
     my $h_y     = 0.0;
-    my $h_dec9  = (index($h_key, substr($code, 0, 1)) * 30.0 + index($h_key, substr($code, 1, 1))) . substr($code, 2);
+    my $h_dec9  = ( $h_key{ substr($code, 0, 1) } * 30.0 + $h_key{ substr($code, 1, 1) } ) . substr($code, 2);
 
-    if ($h_dec9 =~ /^[15][^125][^125]/) {
-        if (substr($h_dec9, 0, 1) eq 5) {
-            $h_dec9 = 7 . substr($h_dec9, 1);
-        } elsif (substr($h_dec9, 0, 1) eq 1) {
-            $h_dec9 = 3 . substr($h_dec9, 1);
-        }
+    # TODO: comment
+    if ( $h_dec9 =~ /^([15])[^125][^125]/ ) {
+        $h_dec9 = ($1 eq '5' ? '7' : '3') . substr($h_dec9, 1);
     }
 
     my $d9xlen = length($h_dec9);
@@ -159,27 +158,27 @@ sub getZoneByCode {
     my @h_decx = ();
     my @h_decy = ();
 
-    for (my $i = 0; $i < length( $h_dec3 ) / 2; $i++) {
+    for my $i ( 0 .. int( length( $h_dec3 ) / 2 ) -1 ) {
         $h_decx[$i] = substr( $h_dec3, $i * 2, 1 );
         $h_decy[$i] = substr( $h_dec3, $i * 2 + 1, 1 );
     }
 
     foreach my $i ( 0..$level ) {
         my $h_pow = 3 ** ($level - $i);
-        if ( $h_decx[$i] eq 0 ) {
+        if ( $h_decx[$i] eq '0' ) {
             $h_x -= $h_pow;
-        } elsif ( $h_decx[$i] eq 2 ) {
+        } elsif ( $h_decx[$i] eq '2' ) {
             $h_x += $h_pow;
         }
-        if ( $h_decy[$i] eq 0 ) {
+        if ( $h_decy[$i] eq '0' ) {
             $h_y -= $h_pow;
-        } elsif ( $h_decy[$i] eq 2 ) {
+        } elsif ( $h_decy[$i] eq '2' ) {
             $h_y += $h_pow;
         }
     }
 
-    my $h_lat_y = ( $h_k * $h_x * $unit_x + $h_y * $unit_y ) / 2;
-    my $h_lon_x = ( $h_lat_y - $h_y * $unit_y ) / $h_k;
+    my $h_lat_y = ( H_K * $h_x * $unit_x + $h_y * $unit_y ) / 2;
+    my $h_lon_x = ( $h_lat_y - $h_y * $unit_y ) / H_K;
 
     my $h_loc = __xy2loc( $h_lon_x, $h_lat_y );
 
@@ -230,24 +229,25 @@ sub _to_base {
 }
 
 sub __setHexSize {
-  return $h_base / 3.0 ** ( $_[0] + 1 );
+  return H_BASE / 3.0 ** ( $_[0] + 1 );
 }
 
 sub __loc2xy {
     my ($lon, $lat) = @_;
-    my $x = $lon * $h_base / 180;
-    my $y = log( tan( ( 90 + $lat ) * pi() / 360 ) ) / ( pi() / 180 );
-    $y *= $h_base / 180;
+    my $x = $lon * H_BASE / 180;
+    my $y = log( Math::Trig::tan( ( 90 + $lat ) * PI / 360 ) ) / ( PI / 180 );
+    $y *= H_BASE / 180;
     { x => $x, y => $y };
 }
 
 sub __xy2loc {
     my ( $x, $y ) = @_;
-    my $lon = ( $x / $h_base ) * 180;
-    my $lat = ( $y / $h_base ) * 180;
-    $lat = 180 / pi() * ( 2 * atan( exp( $lat * pi() / 180 ) ) - pi() / 2 );
+    my $lon = 180 * ($x / H_BASE);
+    my $lat = 180 * ($y / H_BASE);
+    $lat = 180 / PI * ( 2 * Math::Trig::atan( exp( $lat * PI / 180 ) ) - PI / 2 );
     { lon => $lon, lat => $lat };
 }
+
 
 1;
 __END__
