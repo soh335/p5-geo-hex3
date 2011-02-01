@@ -1,0 +1,31 @@
+GeoHex3 - GeoHex v3 encoder/decoder
+=================
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DESCRIPTION
+    GeoHex v3 encoder/decoder
+
+SEE ALSO
+    http://geogames.net/geohex/v3
+
+AUTHOR
+    soh335
+
+COPYRIGHT AND LICENSE
+    GeoHex by @sa2da (http://geogames.net) is licensed under
+    Creative Commons BY-SA 2.1 Japan License.
+
+    Copyright 2011
+    Geo::Hex3 - GeoHex perl implementation by soh335
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
