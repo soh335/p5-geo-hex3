@@ -23,7 +23,6 @@ use constant H_K    => Math::Trig::tan( H_DEG );
 my $i = 0;
 my @h_key   = split//,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 my %h_key   = map { $_ => $i++ } @h_key;
-my $h_key   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 
 sub getZoneByLocation {
