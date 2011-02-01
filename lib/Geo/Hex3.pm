@@ -99,12 +99,8 @@ sub getZoneByLocation {
         }
     }
 
-    foreach my $i (0..$#code3_x) {
-        $code3  .= $code3_x[$i] . $code3_y[$i];
-        $code9  .= $calc->from_base($code3);
-        $h_code .= $code9;
-        $code9  = "";
-        $code3  = "";
+    for ( 0 .. $#code3_x ) {
+        $h_code .= _from_base( $code3_x[$_] . $code3_y[$_] );
     }
 
     my $h_2   = substr( $h_code, 3 );
@@ -147,13 +143,16 @@ sub getZoneByCode {
     }
 
     my $h_dec3 = "";
-    for (my $i = 0; $i < $d9xlen; $i++) {
-        my $h_dec0 = "".$calc->to_base(substr($h_dec9, $i, 1));
-        unless (defined $h_dec0) {
-            $h_dec3 .= 00;
-        } elsif (length($h_dec0) == 1) {
-            $h_dec3 .= 0;
+    for my $i ( 0 .. $d9xlen - 1 ) {
+        my $h_dec0 = _to_base( substr($h_dec9, $i, 1) );
+
+        unless ( defined $h_dec0 ) {
+            $h_dec3 .= '00';
         }
+        elsif ( length($h_dec0) == 1 ) {
+            $h_dec3 .= '0';
+        }
+
         $h_dec3 .= $h_dec0;
     }
 
@@ -197,6 +196,37 @@ sub getZoneByCode {
         lon   => $h_loc->{lon},
         code  => $code
     };
+}
+
+
+# copied and modified from Math::BaseCalc
+sub _from_base {
+    my $str = $_[0];
+    my $dignum = 3;
+
+    $str = reverse $str;
+    my $result = 0;
+    while (length $str) {
+        # For large numbers, force result to be an integer (not a float)
+        $result = int( $result * $dignum + chop( $str ) );
+    }
+
+    return $result;
+}
+
+# copied and modified from Math::BaseCalc
+sub _to_base {
+    my ($num) = @_;
+    my $dignum = 3;# @{$self->{digits}};
+
+    my $result = '';
+
+    while ($num>0) {
+        substr($result,0,0) = $num % $dignum;
+        $num = int ($num/$dignum);
+    }
+
+    return length $result ? $result : 0;
 }
 
 sub __setHexSize {
