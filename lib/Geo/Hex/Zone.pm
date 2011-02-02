@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 sub new {
-    my ( $class, @args ) = @_;
-    @args > 1 ? bless { @args }, $class : bless $args[0], $class;
+    my ( $class, $arg ) = @_;
+    bless $arg, $class;
 }
 
 sub lat { $_[0]->{lat} }
