@@ -3,8 +3,9 @@ package Geo::Hex3;
 use 5.008;
 use warnings;
 use strict;
-use Carp;
+use Carp ();
 
+use Geo::Hex::Zone;
 use POSIX qw/floor ceil/;
 use Math::Round  ();
 use Math::Trig   ();
@@ -116,13 +117,13 @@ sub getZoneByLocation {
     my $head3 = substr( $h_code, 0, 3 );
     my $code  = $h_key[ int( $head3 / 30.0 ) ] . $h_key[ $head3 % 30 ] . substr( $h_code, 3 );
 
-    {
+    Geo::Hex::Zone->new({
         code  => $code,
         x     => $h_x,
         y     => $h_y,
         lat   => $z_loc_y,
         lon   => $z_loc_x
-    };
+    });
 }
 
 
@@ -194,13 +195,13 @@ sub getZoneByCode {
         $h_loc->{lon} += 360;
     }
 
-    {
+    Geo::Hex::Zone->new({
         x     => $h_x,
         y     => $h_y,
         lat   => $h_loc->{lat},
         lon   => $h_loc->{lon},
         code  => $code
-    };
+    });
 }
 
 
