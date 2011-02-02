@@ -107,17 +107,17 @@ sub getZoneByLocation {
         }
     }
 
+    # ternary to nonary
     for ( 0 .. $#code3_x ) {
         $h_code .= _from_base( $code3_x[$_] . $code3_y[$_] );
     }
 
-    my $h_2   = substr( $h_code, 3 );
-    my $h_1   = substr( $h_code, 0, 3 );
-    my $h_a1  = floor( $h_1 / 30.0 );
-    my $h_a2  = $h_1 % 30.0;
+    # three head chars are converted into trigesimal number
+    my $head3 = substr( $h_code, 0, 3 );
+    my $code  = $h_key[ int( $head3 / 30.0 ) ] . $h_key[ $head3 % 30 ] . substr( $h_code, 3 );
 
     {
-        code  => $h_key[ $h_a1 ] . $h_key[ $h_a2 ] . $h_2,
+        code  => $code,
         x     => $h_x,
         y     => $h_y,
         lat   => $z_loc_y,
