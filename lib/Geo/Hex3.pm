@@ -24,6 +24,8 @@ my $i = 0;
 my @h_key   = split//,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 my %h_key   = map { $_ => $i++ } @h_key;
 
+$i = 0;
+my @pow = map { 3 ** $_ } 0..17;
 
 sub getZoneByLocation {
     my ( $lat, $lon, $level ) = @_;
@@ -77,26 +79,31 @@ sub getZoneByLocation {
     my $mod_y   = $h_y;
 
     for my $i ( 0 .. $level ) {
-        my $h_pow = 3.0 ** ( $level - $i );
+        my $h_pow    = $pow[ $level - $i ];
+        my $half_pow = ceil( $h_pow / 2 );
 
-        if ( $mod_x >= ceil( $h_pow/2.0 ) ) {
-            $code3_x[$i] = 2.0;
+        if ( $mod_x >= $half_pow ) {
+            $code3_x[$i] = 2;
             $mod_x -= $h_pow;
-        } elsif ( $mod_x <= - ceil( $h_pow / 2.0 ) ) {
-            $code3_x[$i] = 0.0;
+        }
+        elsif ( $mod_x <= - $half_pow ) {
+            $code3_x[$i] = 0;
             $mod_x += $h_pow;
-        } else {
-            $code3_x[$i] = 1.0;
+        }
+        else {
+            $code3_x[$i] = 1;
         }
 
-        if ( $mod_y >= ceil( $h_pow / 2.0 ) ) {
-            $code3_y[$i] = 2.0;
+        if ( $mod_y >= $half_pow ) {
+            $code3_y[$i] = 2;
             $mod_y -= $h_pow;
-        } elsif ( $mod_y <= - ceil( $h_pow / 2.0 ) ) {
-            $code3_y[$i] = 0.0;
+        }
+        elsif ( $mod_y <= - $half_pow ) {
+            $code3_y[$i] = 0;
             $mod_y += $h_pow;
-        } else {
-            $code3_y[$i] = 1.0;
+        }
+        else {
+            $code3_y[$i] = 1;
         }
     }
 
