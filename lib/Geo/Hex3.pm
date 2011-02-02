@@ -10,10 +10,10 @@ use Math::Round  ();
 use Math::Trig   ();
 
 our $VERSION = '0.01';
-use vars qw/@ISA @EXPORT/;
+use vars qw(@ISA @EXPORT);
 use Exporter;
-@ISA = qw/Exporter/;
-@EXPORT = qw/getZoneByLocation getZoneByCode/;
+@ISA = qw(Exporter);
+@EXPORT = qw(getZoneByLocation getZoneByCode);
 
 use constant PI     => Math::Trig::pi();
 use constant H_DEG  => PI * ( 30.0 / 180.0 );
